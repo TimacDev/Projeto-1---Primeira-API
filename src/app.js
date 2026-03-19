@@ -13,7 +13,7 @@ app.use(logger)
 
 // tasks
 const taskRoutes = require("./routes/tasks")
-app.use("/tasks", taskRoutes)
+app.use("/tarefas", taskRoutes)
 
 // users
 const userRoutes = require("./routes/users")

@@ -1,90 +1,99 @@
 const db = require("../db")
 
 const getAllTasks = async (search, sort) => {
-  let sql = "SELECT * FROM tasks"
+  let sql = "SELECT * FROM tarefas"
   const params = []
 
   if (search) {
-    sql += " WHERE title LIKE ?"
+    sql += " WHERE titulo LIKE ?"
     params.push(`%${search}%`)
   }
 
   if (sort === "asc") {
-    sql += " ORDER BY title ASC"
+    sql += " ORDER BY titulo ASC"
   } else if (sort === "desc") {
-    sql += " ORDER BY title DESC"
+    sql += " ORDER BY titulo DESC"
   }
 
   const [rows] = await db.query(sql, params)
   return rows
 }
 
-const getTaskStats = () => {
-  const total = tasks.length;
-  const pending = tasks.filter((t) => !t.done).length;
-  const completed = tasks.filter((t) => t.done).length;
+const getTaskStats = async () => {
+  const [rows] = await db.query("SELECT estado, COUNT(*) as count FROM tarefas GROUP BY estado")
+  let pending = 0
+  let completed = 0
+  let total = 0
 
-  return { total, pending, completed };
-};
-
-const getTaskById = (taskId) => {
-  return tasks.find((t) => t.id === parseInt(taskId));
-};
-
-const postTask = (data) => {
-  if (!data.title || data.title.length <= 3) {
-    throw new Error("Title must have more than 3 characters");
+  for (const row of rows) {
+    total += row.count
+    if (row.estado === "concluida") {
+      completed = row.count
+    } else {
+      pending += row.count
+    }
   }
 
-  if (!data.assignee) {
-    throw new Error("Assignee cannot be empty");
+  return { total, pending, completed }
+}
+
+const getTaskById = async (taskId) => {
+  const [rows] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
+  return rows[0]
+}
+
+const postTask = async (data) => {
+  if (!data.titulo || data.titulo.length <= 3) {
+    throw new Error("Title must have more than 3 characters")
   }
 
-  const task = {
-    id: id++,
-    title: data.title,
-    category: data.category,
-    done: false,
-    assignee: data.assignee,
-    completedAt: undefined,
-  };
+  const [result] = await db.query(
+    "INSERT INTO tarefas (titulo, descricao, estado) VALUES (?, ?, ?)",
+    [data.titulo, data.descricao || null, data.estado || "pendente"]
+  )
 
-  tasks.push(task);
-  return task;
-};
+  const [rows] = await db.query("SELECT * FROM tarefas WHERE id = ?", [result.insertId])
+  return rows[0]
+}
 
-const putTask = (taskId, data) => {
-  const task = tasks.find((t) => t.id === parseInt(taskId));
+const putTask = async (taskId, data) => {
+  const [existing] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
 
-  if (!task) {
-    throw new Error("Task not found");
+  if (existing.length === 0) {
+    throw new Error("Task not found")
   }
 
-  task.title = data.title;
-  task.category = data.category;
-  task.assignee = data.assignee;
-  task.done = data.done;
+  await db.query(
+    "UPDATE tarefas SET titulo = ?, descricao = ?, estado = ? WHERE id = ?",
+    [data.titulo, data.descricao, data.estado, taskId]
+  )
 
-  if (data.done === true) {
-    task.completedAt = new Date().toISOString();
-  } else {
-    task.completedAt = undefined;
+  const [rows] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
+  return rows[0]
+}
+
+const deleteTask = async (taskId) => {
+  const [existing] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
+
+  if (existing.length === 0) {
+    throw new Error("Task not found")
   }
 
-  return task;
-};
+  await db.query("DELETE FROM tarefas WHERE id = ?", [taskId])
 
-const deleteTask = (taskId) => {
-  const task = tasks.find((t) => t.id === parseInt(taskId));
+  const [rows] = await db.query("SELECT estado, COUNT(*) as count FROM tarefas GROUP BY estado")
+  let pending = 0
+  let completed = 0
 
-  if (!task) throw new Error("Task not found");
+  for (const row of rows) {
+    if (row.estado === "concluida") {
+      completed = row.count
+    } else {
+      pending += row.count
+    }
+  }
 
-  tasks = tasks.filter((t) => t.id !== parseInt(taskId));
-
-  const pending = tasks.filter((t) => !t.done).length;
-  const completed = tasks.filter((t) => t.done).length;
-
-  return { task, pending, completed };
-};
+  return { task: existing[0], pending, completed }
+}
 
 module.exports = { getAllTasks, postTask, putTask, deleteTask, getTaskStats, getTaskById };
