@@ -1,18 +1,18 @@
 const db = require("../db")
 
 const getAllTasks = async (search, sort) => {
-  let sql = "SELECT * FROM tarefas"
+  let sql = "SELECT * FROM tasks"
   const params = []
 
   if (search) {
-    sql += " WHERE titulo LIKE ?"
+    sql += " WHERE title LIKE ?"
     params.push(`%${search}%`)
   }
 
   if (sort === "asc") {
-    sql += " ORDER BY titulo ASC"
+    sql += " ORDER BY title ASC"
   } else if (sort === "desc") {
-    sql += " ORDER BY titulo DESC"
+    sql += " ORDER BY title DESC"
   }
 
   const [rows] = await db.query(sql, params)
@@ -20,14 +20,14 @@ const getAllTasks = async (search, sort) => {
 }
 
 const getTaskStats = async () => {
-  const [rows] = await db.query("SELECT estado, COUNT(*) as count FROM tarefas GROUP BY estado")
+  const [rows] = await db.query("SELECT status, COUNT(*) as count FROM tasks GROUP BY status")
   let pending = 0
   let completed = 0
   let total = 0
 
   for (const row of rows) {
     total += row.count
-    if (row.estado === "concluida") {
+    if (row.status === "completed") {
       completed = row.count
     } else {
       pending += row.count
@@ -38,55 +38,55 @@ const getTaskStats = async () => {
 }
 
 const getTaskById = async (taskId) => {
-  const [rows] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
+  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId])
   return rows[0]
 }
 
 const postTask = async (data) => {
-  if (!data.titulo || data.titulo.length <= 3) {
+  if (!data.title || data.title.length <= 3) {
     throw new Error("Title must have more than 3 characters")
   }
 
   const [result] = await db.query(
-    "INSERT INTO tarefas (titulo, descricao, estado) VALUES (?, ?, ?)",
-    [data.titulo, data.descricao || null, data.estado || "pendente"]
+    "INSERT INTO tasks (title, description, status) VALUES (?, ?, ?)",
+    [data.title, data.description || null, data.status || "pending"]
   )
 
-  const [rows] = await db.query("SELECT * FROM tarefas WHERE id = ?", [result.insertId])
+  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [result.insertId])
   return rows[0]
 }
 
 const putTask = async (taskId, data) => {
-  const [existing] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
+  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId])
 
   if (existing.length === 0) {
     throw new Error("Task not found")
   }
 
   await db.query(
-    "UPDATE tarefas SET titulo = ?, descricao = ?, estado = ? WHERE id = ?",
-    [data.titulo, data.descricao, data.estado, taskId]
+    "UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?",
+    [data.title, data.description, data.status, taskId]
   )
 
-  const [rows] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
+  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId])
   return rows[0]
 }
 
 const deleteTask = async (taskId) => {
-  const [existing] = await db.query("SELECT * FROM tarefas WHERE id = ?", [taskId])
+  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId])
 
   if (existing.length === 0) {
     throw new Error("Task not found")
   }
 
-  await db.query("DELETE FROM tarefas WHERE id = ?", [taskId])
+  await db.query("DELETE FROM tasks WHERE id = ?", [taskId])
 
-  const [rows] = await db.query("SELECT estado, COUNT(*) as count FROM tarefas GROUP BY estado")
+  const [rows] = await db.query("SELECT status, COUNT(*) as count FROM tasks GROUP BY status")
   let pending = 0
   let completed = 0
 
   for (const row of rows) {
-    if (row.estado === "concluida") {
+    if (row.status === "completed") {
       completed = row.count
     } else {
       pending += row.count
