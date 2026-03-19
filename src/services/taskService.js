@@ -1,14 +1,4 @@
-let tasks = [
-  {
-    id: 1,
-    title: "Create layout",
-    category: "work",
-    done: false,
-    assignee: "Tiago",
-    completedAt: undefined,
-  },
-];
-let id = 2;
+const db = require("../db")
 
 const getAllTasks = async (search, sort) => {
   let sql = "SELECT * FROM tasks"
