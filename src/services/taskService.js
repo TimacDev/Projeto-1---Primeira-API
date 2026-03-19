@@ -10,23 +10,24 @@ let tasks = [
 ];
 let id = 2;
 
-const getAllTasks = (search, sort) => {
-  let result = [...tasks];
+const getAllTasks = async (search, sort) => {
+  let sql = "SELECT * FROM tasks"
+  const params = []
 
   if (search) {
-    result = result.filter((t) =>
-      t.title.toLowerCase().includes(search.toLowerCase()),
-    );
+    sql += " WHERE title LIKE ?"
+    params.push(`%${search}%`)
   }
 
   if (sort === "asc") {
-    result.sort((a, b) => a.title.localeCompare(b.title));
+    sql += " ORDER BY title ASC"
   } else if (sort === "desc") {
-    result.sort((a, b) => b.title.localeCompare(a.title));
+    sql += " ORDER BY title DESC"
   }
 
-  return result;
-};
+  const [rows] = await db.query(sql, params)
+  return rows
+}
 
 const getTaskStats = () => {
   const total = tasks.length;
