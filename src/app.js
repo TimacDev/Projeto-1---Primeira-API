@@ -27,14 +27,9 @@ app.use("/tags", tagsRoutes)
 const taskTagsRoutes = require("./routes/taskTags")
 app.use("/taskTags", taskTagsRoutes)
 
-// notifications
-const notificationsRoutes = require("./routes/notifications")
-app.use("/notifications", notificationsRoutes)
-
 // taskUsers
 const taskUsersRoutes = require("./routes/taskUsers")
 app.use("/taskUsers", taskUsersRoutes)
-
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`))
