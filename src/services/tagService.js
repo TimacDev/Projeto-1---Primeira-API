@@ -1,8 +1,3 @@
-let tags = [
-  { id: 1, name: "backend" }
-];
-let id = 2;
-
 const getAllTags = () => {
   return tags;
 };

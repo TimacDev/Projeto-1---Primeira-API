@@ -1,9 +1,3 @@
-let taskUsers = [
-  { id: 1, taskId: 1, userId: 1 },
-  { id: 2, taskId: 1, userId: 2 }
-];
-let id = 3;
-
 const getAllTaskUsers = () => {
   return taskUsers;
 };

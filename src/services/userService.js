@@ -1,9 +1,3 @@
-let users = [
-  { id: 1, name: "Tiago", email: "tiago@example.com", active: true },
-  { id: 2, name: "Rui", email: "rui@example.com", active: true }
-];
-let id = 3;
-
 const getAllUsers = (search, sort) => {
   let result = [...users];
 

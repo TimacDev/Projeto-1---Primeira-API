@@ -1,11 +1,6 @@
 const taskService = require("./taskService");
 const tagService = require("./tagService");
 
-let taskTags = [
-  { id: 1, taskId: 1, tagId: 1 }
-];
-let id = 2;
-
 const getAllTaskTags = () => {
   return taskTags;
 };
