@@ -1,21 +1,21 @@
 const db = require("../db")
 
 const getAllTasks = async (search, sort) => {
-  let sql = "SELECT * FROM tasks"
+  let query = "SELECT * FROM tasks"
   const params = []
 
   if (search) {
-    sql += " WHERE title LIKE ?"
+    query += " WHERE title LIKE ?"
     params.push(`%${search}%`)
   }
 
   if (sort === "asc") {
-    sql += " ORDER BY title ASC"
+    query += " ORDER BY title ASC"
   } else if (sort === "desc") {
-    sql += " ORDER BY title DESC"
+    query += " ORDER BY title DESC"
   }
 
-  const [rows] = await db.query(sql, params)
+  const [rows] = await db.query(query, params)
   return rows
 }
 
