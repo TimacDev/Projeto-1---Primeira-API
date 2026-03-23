@@ -29,6 +29,11 @@ const getUserStats = async () => {
   return { total, active, activePercentage };
 };
 
+const getUserById = async (userId) => {
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+  return rows[0];
+};
+
 const postUser = async (data) => {
   if (!data.name) {
     throw new Error("Name is required");
@@ -87,11 +92,6 @@ const toggleUserActive = async (userId) => {
     userId,
   ]);
 
-  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
-  return rows[0];
-};
-
-const getUserById = async (userId) => {
   const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
   return rows[0];
 };
