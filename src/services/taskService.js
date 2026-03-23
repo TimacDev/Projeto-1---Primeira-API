@@ -20,9 +20,7 @@ const getAllTasks = async (search, sort) => {
 };
 
 const getTaskStats = async () => {
-  const [rows] = await db.query(
-    "SELECT status, COUNT(*) as count FROM tasks GROUP BY status",
-  );
+  const [rows] = await db.query("SELECT status, COUNT(*) as count FROM tasks GROUP BY status");
   let pending = 0;
   let completed = 0;
   let total = 0;
@@ -49,39 +47,27 @@ const postTask = async (data) => {
     throw new Error("Title must have more than 3 characters");
   }
 
-  const [result] = await db.query(
-    "INSERT INTO tasks (title, description, status, user_id) VALUES (?, ?, ?, ?)",
-    [data.title, data.description, data.status, data.userId],
-  );
+  const [result] = await db.query("INSERT INTO tasks (title, description, status, user_id) VALUES (?, ?, ?, ?)", [data.title, data.description, data.status, data.userId]);
 
-  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [
-    result.insertId,
-  ]);
+  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [result.insertId]);
   return rows[0];
 };
 
 const putTask = async (taskId, data) => {
-  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [
-    taskId,
-  ]);
+  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
 
   if (existing.length === 0) {
     throw new Error("Task not found");
   }
 
-  await db.query(
-    "UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?",
-    [data.title, data.description, data.status, taskId],
-  );
+  await db.query("UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?", [data.title, data.description, data.status, taskId]);
 
   const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
   return rows[0];
 };
 
 const deleteTask = async (taskId) => {
-  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [
-    taskId,
-  ]);
+  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
 
   if (existing.length === 0) {
     throw new Error("Task not found");
@@ -90,9 +76,7 @@ const deleteTask = async (taskId) => {
   await db.query("DELETE FROM comments WHERE task_id = ?", [taskId]);
   await db.query("DELETE FROM tasks WHERE id = ?", [taskId]);
 
-  const [rows] = await db.query(
-    "SELECT status, COUNT(*) as count FROM tasks GROUP BY status",
-  );
+  const [rows] = await db.query("SELECT status, COUNT(*) as count FROM tasks GROUP BY status");
   let pending = 0;
   let completed = 0;
 

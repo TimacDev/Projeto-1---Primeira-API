@@ -21,9 +21,9 @@ const getAllUsers = async (search, sort) => {
 
 const getUserStats = async () => {
   const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM users");
-  const [[{ active }]] = await db.query(
-    "SELECT COUNT(*) as active FROM users WHERE active = 1",
-  );
+
+  const [[{ active }]] = await db.query("SELECT COUNT(*) as active FROM users WHERE active = 1");
+
   const activePercentage = total > 0 ? Math.round((active / total) * 100) : 0;
 
   return { total, active, activePercentage };
@@ -43,14 +43,10 @@ const postUser = async (data) => {
     throw new Error("Invalid email");
   }
 
-  const [result] = await db.query(
-    "INSERT INTO users (name, email) VALUES (?, ?)",
-    [data.name, data.email],
-  );
+  const [result] = await db.query("INSERT INTO users (name, email) VALUES (?, ?)", [data.name, data.email]);
 
-  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [
-    result.insertId,
-  ]);
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [result.insertId]);
+
   return rows[0];
 };
 
@@ -60,9 +56,7 @@ const putUser = async (userId, data) => {
   }
 
   const [result] = await db.query(
-    "UPDATE users SET name = ?, email = ? WHERE id = ?",
-    [data.name, data.email, userId],
-  );
+    "UPDATE users SET name = ?, email = ? WHERE id = ?", [data.name, data.email, userId]);
 
   if (result.affectedRows === 0) {
     throw new Error("User not found");
@@ -83,14 +77,11 @@ const deleteUser = async (userId) => {
 };
 
 const toggleUserActive = async (userId) => {
-  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [
-    userId,
-  ]);
+  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+
   const newActive = existing[0].active ? 0 : 1;
-  await db.query("UPDATE users SET active = ? WHERE id = ?", [
-    newActive,
-    userId,
-  ]);
+
+  await db.query("UPDATE users SET active = ? WHERE id = ?", [newActive, userId]);
 
   const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
   return rows[0];

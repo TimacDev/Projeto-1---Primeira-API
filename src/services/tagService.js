@@ -11,10 +11,7 @@ const getTagById = async (tagId) => {
 };
 
 const getTasksByTagId = async (tagId) => {
-  const [rows] = await db.query(
-    "SELECT t.* FROM tasks t JOIN task_tags tt ON t.id = tt.task_id WHERE tt.tag_id = ?",
-    [tagId],
-  );
+  const [rows] = await db.query("SELECT t.* FROM tasks t JOIN task_tags tt ON t.id = tt.task_id WHERE tt.tag_id = ?", [tagId]);
   return rows;
 };
 
@@ -23,13 +20,9 @@ const postTag = async (data) => {
     throw new Error("Tag must have a name");
   }
 
-  const [result] = await db.query("INSERT INTO tags (name) VALUES (?)", [
-    data.name,
-  ]);
+  const [result] = await db.query("INSERT INTO tags (name) VALUES (?)", [data.name]);
 
-  const [rows] = await db.query("SELECT * FROM tags WHERE id = ?", [
-    result.insertId,
-  ]);
+  const [rows] = await db.query("SELECT * FROM tags WHERE id = ?", [result.insertId]);
   return rows[0];
 };
 
