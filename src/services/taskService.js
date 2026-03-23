@@ -78,7 +78,8 @@ const deleteTask = async (taskId) => {
   if (existing.length === 0) {
     throw new Error("Task not found")
   }
-
+  
+  await db.query("DELETE FROM comments WHERE task_id = ?", [taskId])
   await db.query("DELETE FROM tasks WHERE id = ?", [taskId])
 
   const [rows] = await db.query("SELECT status, COUNT(*) as count FROM tasks GROUP BY status")

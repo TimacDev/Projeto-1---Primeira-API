@@ -1,7 +1,9 @@
+const db = require("../db")
+
 const taskService = require("./taskService");
 const userService = require("./userService");
 
-const getCommentsByTaskId = (taskId) => {
+const getCommentsByTaskId = async (taskId) => {
   const task = taskService.getTaskById(taskId);
   if (!task) {
     throw new Error("Task not found");
@@ -10,7 +12,7 @@ const getCommentsByTaskId = (taskId) => {
   return comments.filter((c) => c.taskId === parseInt(taskId));
 };
 
-const postComment = (taskId, data) => {
+const postComment = async (taskId, data) => {
   const task = taskService.getTaskById(taskId);
   if (!task) {
     throw new Error("Task not found");
@@ -21,26 +23,20 @@ const postComment = (taskId, data) => {
     throw new Error("User not found");
   }
 
-  const comment = {
-    id: id++,
-    taskId: parseInt(taskId),
-    userId: data.userId,
-    content: data.content,
-    createdAt: new Date().toISOString(),
-  };
-
   comments.push(comment);
   return comment;
 };
 
-const deleteComment = (commentId) => {
-  const comment = comments.find((c) => c.id === parseInt(commentId));
+const deleteComment = async (commentId) => {
+  const [existing] = await db.query("SELECT * FROM comments WHERE id = ?", [commentId])
 
-  if (!comment) throw new Error("Comment not found");
+  if (existing.length === 0) {
+    throw new Error("Comment not found")
+  }
 
-  comments = comments.filter((c) => c.id !== parseInt(commentId));
+  await db.query("DELETE FROM comments WHERE id = ?", [commentId])
 
-  return comment;
+  return existing[0]
 };
 
 module.exports = { getCommentsByTaskId, postComment, deleteComment };
