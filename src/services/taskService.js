@@ -107,6 +107,11 @@ const deleteTask = async (taskId) => {
   return { task: existing[0], pending, completed };
 };
 
+const getTasksByUserId = async (userId) => {
+  const [rows] = await db.query("SELECT * FROM tasks WHERE user_id = ?", [userId]);
+  return rows;
+};
+
 module.exports = {
   getAllTasks,
   postTask,
@@ -114,4 +119,5 @@ module.exports = {
   deleteTask,
   getTaskStats,
   getTaskById,
+  getTasksByUserId,
 };

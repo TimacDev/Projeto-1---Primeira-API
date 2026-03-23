@@ -1,4 +1,5 @@
 const userService = require("../services/userService");
+const taskService = require("../services/taskService");
 
 const getUsers = async (req, res) => {
   try {
@@ -55,6 +56,15 @@ const getUserStats = async (req, res) => {
   }
 };
 
+const getTasksByUser = async (req, res) => {
+  try {
+    const tasks = await taskService.getTasksByUserId(req.params.id);
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getUsers,
   postUser,
@@ -62,4 +72,5 @@ module.exports = {
   deleteUser,
   patchUser,
   getUserStats,
+  getTasksByUser,
 };

@@ -1,7 +1,5 @@
 const express = require("express");
 const taskController = require("../controllers/taskController");
-const taskTagController = require("../controllers/taskTagController");
-const commentController = require("../controllers/commentController");
 
 const router = express.Router();
 
@@ -10,8 +8,14 @@ router.get("/", taskController.getTasks);
 router.post("/", taskController.postTask);
 router.put("/:id", taskController.putTask);
 router.delete("/:id", taskController.deleteTask);
-router.post("/:id/tags", taskTagController.postTaskTag);
-router.get("/:id/comments", commentController.getComments);
-router.post("/:id/comments", commentController.postComment);
+
+// tags
+router.post("/:id/tags", taskController.postTaskTag);
+
+// comments
+router.get("/:id/comments", taskController.getComments);
+router.post("/:id/comments", taskController.postComment);
+router.put("/:id/comments/:commentId", taskController.putComment);
+router.delete("/:id/comments/:commentId", taskController.deleteComment);
 
 module.exports = router;

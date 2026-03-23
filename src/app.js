@@ -12,20 +12,16 @@ const logger = require("./middlewares/loggerMiddleware");
 app.use(logger);
 
 // tasks
-const taskRoutes = require("./routes/tasks");
+const taskRoutes = require("./routes/taskRoutes");
 app.use("/tasks", taskRoutes);
 
 // users
-const userRoutes = require("./routes/users");
+const userRoutes = require("./routes/userRoutes");
 app.use("/users", userRoutes);
 
 // tags
-const tagsRoutes = require("./routes/tags");
-app.use("/tags", tagsRoutes);
-
-// taskTags
-const taskTagsRoutes = require("./routes/taskTags");
-app.use("/taskTags", taskTagsRoutes);
+const tagRoutes = require("./routes/tagRoutes");
+app.use("/tags", tagRoutes);
 
 // taskUsers
 const taskUsersRoutes = require("./routes/taskUsers");

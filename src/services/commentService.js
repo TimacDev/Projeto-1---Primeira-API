@@ -19,6 +19,22 @@ const postComment = async (taskId, data) => {
   return rows[0];
 };
 
+const updateComment = async (commentId, data) => {
+  const [result] = await db.query(
+    "UPDATE comments SET content = ? WHERE id = ?",
+    [data.content, commentId],
+  );
+
+  if (result.affectedRows === 0) {
+    throw new Error("Comment not found");
+  }
+
+  const [rows] = await db.query("SELECT * FROM comments WHERE id = ?", [
+    commentId,
+  ]);
+  return rows[0];
+};
+
 const deleteComment = async (commentId) => {
   const [existing] = await db.query("SELECT * FROM comments WHERE id = ?", [
     commentId,
@@ -33,4 +49,4 @@ const deleteComment = async (commentId) => {
   return existing[0];
 };
 
-module.exports = { getCommentsByTaskId, postComment, deleteComment };
+module.exports = { getCommentsByTaskId, postComment, updateComment, deleteComment };
