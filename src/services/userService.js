@@ -50,19 +50,27 @@ const putUser = async (userId, data) => {
     throw new Error("Invalid email");
   }
 
-  await db.query(
+  const [result] = await db.query(
     "UPDATE users SET name = ?, email = ? WHERE id = ?",
     [data.name, data.email, userId]
   )
+
+  if (result.affectedRows === 0) {
+    throw new Error("User not found")
+  }
 
   const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
   return rows[0]
 };
 
 const deleteUser = async (userId) => {
-  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
-  await db.query("DELETE FROM users WHERE id = ?", [userId])
-  return existing[0]
+  const [result] = await db.query("DELETE FROM users WHERE id = ?", [userId])
+
+  if (result.affectedRows === 0) {
+    throw new Error("User not found")
+  }
+
+  return result
 };
 
 const toggleUserActive = async (userId) => {
