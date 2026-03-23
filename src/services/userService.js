@@ -46,19 +46,13 @@ const postUser = async (data) => {
 };
 
 const putUser = async (userId, data) => {
-  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
-
-  if (existing.length === 0) {
-    throw new Error("User not found")
-  }
-
   if (data.email && !data.email.includes("@")) {
     throw new Error("Invalid email");
   }
 
   await db.query(
-    "UPDATE users SET name = ?, email = ?, active = ? WHERE id = ?",
-    [data.name, data.email, data.active ?? existing[0].active, userId]
+    "UPDATE users SET name = ?, email = ? WHERE id = ?",
+    [data.name, data.email, userId]
   )
 
   const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
@@ -67,23 +61,12 @@ const putUser = async (userId, data) => {
 
 const deleteUser = async (userId) => {
   const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
-
-  if (existing.length === 0) {
-    throw new Error("User not found")
-  }
-
   await db.query("DELETE FROM users WHERE id = ?", [userId])
-
   return existing[0]
 };
 
 const toggleUserActive = async (userId) => {
   const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
-
-  if (existing.length === 0) {
-    throw new Error("User not found")
-  }
-
   const newActive = existing[0].active ? 0 : 1
   await db.query("UPDATE users SET active = ? WHERE id = ?", [newActive, userId])
 

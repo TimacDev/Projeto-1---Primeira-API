@@ -37,8 +37,11 @@ const deleteTag = async (tagId) => {
 };
 
 const getTasksByTagId = async (tagId) => {
-  const [rows] = await db.query("SELECT * FROM tags WHERE id = ?", [tagId])
-  return rows[0]
+  const [rows] = await db.query(
+    "SELECT t.* FROM tasks t JOIN task_tags tt ON t.id = tt.task_id WHERE tt.tag_id = ?",
+    [tagId]
+  )
+  return rows
 };
 
 module.exports = { getAllTags, getTagById, postTag, deleteTag, getTasksByTagId };
