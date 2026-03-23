@@ -1,20 +1,20 @@
 const commentService = require("../services/commentService");
 
-const getComments = (req, res) => {
+const getComments = async (req, res) => {
   try {
-    const comments = commentService.getCommentsByTaskId(req.params.id);
+    const comments = await commentService.getCommentsByTaskId(req.params.id);
     res.json(comments);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
-const postComment = (req, res) => {
+const postComment = async (req, res) => {
   try {
-    const comment = commentService.postComment(req.params.id, req.body);
+    const comment = await commentService.postComment(req.params.id, req.body);
     res.status(201).json(comment);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
