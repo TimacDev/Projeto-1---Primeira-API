@@ -1,7 +1,7 @@
 const db = require("../db");
 
 const getCommentsByTaskId = async (taskId) => {
-  const [rows] = await db.query("SELECT * FROM comments WHERE task_id = ?", [taskId]);
+  const [rows] = await db.query("SELECT * FROM comments WHERE task_id = ? ORDER BY created_at ASC", [taskId]);
   return rows;
 };
 
@@ -24,15 +24,13 @@ const updateComment = async (commentId, data) => {
 };
 
 const deleteComment = async (commentId) => {
-  const [existing] = await db.query("SELECT * FROM comments WHERE id = ?", [commentId]);
+  const [result] = await db.query("DELETE FROM comments WHERE id = ?", [commentId]);
 
-  if (existing.length === 0) {
+  if (result.affectedRows === 0) {
     throw new Error("Comment not found");
   }
 
-  await db.query("DELETE FROM comments WHERE id = ?", [commentId]);
-
-  return existing[0];
+  return result;
 };
 
 module.exports = { getCommentsByTaskId, postComment, updateComment, deleteComment };
