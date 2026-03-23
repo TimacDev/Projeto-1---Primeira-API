@@ -1,30 +1,18 @@
 const db = require("../db")
 
-const taskService = require("./taskService");
-const userService = require("./userService");
-
 const getCommentsByTaskId = async (taskId) => {
-  const task = taskService.getTaskById(taskId);
-  if (!task) {
-    throw new Error("Task not found");
-  }
-
-  return comments.filter((c) => c.taskId === parseInt(taskId));
+  const [rows] = await db.query("SELECT * FROM comments WHERE task_id = ?", [taskId])
+  return rows
 };
 
 const postComment = async (taskId, data) => {
-  const task = taskService.getTaskById(taskId);
-  if (!task) {
-    throw new Error("Task not found");
-  }
+  const [result] = await db.query(
+    "INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)",
+    [taskId, data.userId, data.content]
+  )
 
-  const user = userService.getUserById(data.userId);
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  comments.push(comment);
-  return comment;
+  const [rows] = await db.query("SELECT * FROM comments WHERE id = ?", [result.insertId])
+  return rows[0]
 };
 
 const deleteComment = async (commentId) => {
