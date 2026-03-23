@@ -1,30 +1,33 @@
-const getAllUsers = (search, sort) => {
-  let result = [...users];
+const db = require("../db")
+
+const getAllUsers = async (search, sort) => {
+  let query = "SELECT * FROM users"
+  const params = []
 
   if (search) {
-    result = result.filter((u) =>
-      u.name.toLowerCase().includes(search.toLowerCase())
-    );
+    query += " WHERE name LIKE ?"
+    params.push(`%${search}%`)
   }
 
   if (sort === "asc") {
-    result.sort((a, b) => a.name.localeCompare(b.name));
+    query += " ORDER BY name ASC"
   } else if (sort === "desc") {
-    result.sort((a, b) => b.name.localeCompare(a.name));
+    query += " ORDER BY name DESC"
   }
 
-  return result;
+  const [rows] = await db.query(query, params)
+  return rows
 };
 
-const getUserStats = () => {
-  const total = users.length;
-  const active = users.filter((u) => u.active).length;
-  const activePercentage = total > 0 ? Math.round((active / total) * 100) : 0;
+const getUserStats = async () => {
+  const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM users")
+  const [[{ active }]] = await db.query("SELECT COUNT(*) as active FROM users WHERE active = 1")
+  const activePercentage = total > 0 ? Math.round((active / total) * 100) : 0
 
-  return { total, active, activePercentage };
+  return { total, active, activePercentage }
 };
 
-const postUser = (data) => {
+const postUser = async (data) => {
   if (!data.name) {
     throw new Error("Name is required");
   }
@@ -33,56 +36,64 @@ const postUser = (data) => {
     throw new Error("Invalid email");
   }
 
-  const user = {
-    id: id++,
-    name: data.name,
-    email: data.email,
-    active: true
-  };
-
-  users.push(user);
-  return user;
+  const [result] = await db.query(
+    "INSERT INTO users (name, email) VALUES (?, ?)",
+    [data.name, data.email]
+  )
+  
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [result.insertId])
+  return rows[0]
 };
 
-const putUser = (userId, data) => {
-  const user = users.find((u) => u.id === parseInt(userId));
+const putUser = async (userId, data) => {
+  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
 
-  if (!user) {
-    throw new Error("User not found");
+  if (existing.length === 0) {
+    throw new Error("User not found")
   }
 
   if (data.email && !data.email.includes("@")) {
     throw new Error("Invalid email");
   }
 
-  user.name = data.name;
-  user.email = data.email;
-  return user;
+  await db.query(
+    "UPDATE users SET name = ?, email = ?, active = ? WHERE id = ?",
+    [data.name, data.email, data.active ?? existing[0].active, userId]
+  )
+
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
+  return rows[0]
 };
 
-const deleteUser = (userId) => {
-  const user = users.find((u) => u.id === parseInt(userId));
+const deleteUser = async (userId) => {
+  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
 
-  if (!user) throw new Error("User not found");
-
-  users = users.filter((u) => u.id !== parseInt(userId));
-
-  return user;
-};
-
-const toggleUserActive = (userId) => {
-  const user = users.find((u) => u.id === parseInt(userId));
-
-  if (!user) {
-    throw new Error("User not found");
+  if (existing.length === 0) {
+    throw new Error("User not found")
   }
 
-  user.active = !user.active;
-  return user;
+  await db.query("DELETE FROM users WHERE id = ?", [userId])
+
+  return existing[0]
 };
 
-const getUserById = (userId) => {
-  return users.find((u) => u.id === parseInt(userId));
+const toggleUserActive = async (userId) => {
+  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
+
+  if (existing.length === 0) {
+    throw new Error("User not found")
+  }
+
+  const newActive = existing[0].active ? 0 : 1
+  await db.query("UPDATE users SET active = ? WHERE id = ?", [newActive, userId])
+
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
+  return rows[0]
+};
+
+const getUserById = async (userId) => {
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId])
+  return rows[0]
 };
 
 module.exports = { getAllUsers, postUser, putUser, deleteUser, toggleUserActive, getUserStats, getUserById };

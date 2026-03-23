@@ -49,7 +49,7 @@ const postTask = async (data) => {
 
   const [result] = await db.query(
     "INSERT INTO tasks (title, description, status) VALUES (?, ?, ?)",
-    [data.title, data.description || null, data.status || "pending"]
+    [data.title, data.description, data.status]
   )
 
   const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [result.insertId])
