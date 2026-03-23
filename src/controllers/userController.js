@@ -47,4 +47,11 @@ const getUserStats = (req, res) => {
   res.json(stats);
 };
 
-module.exports = { getUsers, postUser, putUser, deleteUser, patchUser, getUserStats };
+module.exports = {
+  getUsers,
+  postUser,
+  putUser,
+  deleteUser,
+  patchUser,
+  getUserStats,
+};

@@ -1,4 +1,4 @@
-const mysql = require("mysql2")
+const mysql = require("mysql2");
 
 const db = mysql
   .createPool({
@@ -6,8 +6,8 @@ const db = mysql
     user: process.env.DB_USER || "root",
     password: process.env.DB_PASSWORD || "",
     database: process.env.DB_NAME || "clickup",
-    connectionLimit: 10
+    connectionLimit: 10,
   })
-  .promise()
+  .promise();
 
-  module.exports = db
+module.exports = db;

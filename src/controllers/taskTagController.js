@@ -16,7 +16,11 @@ const postTaskTag = (req, res) => {
 
 const putTaskTag = (req, res) => {
   try {
-    const taskTag = taskTagService.putTaskTag(req.params.id, req.body.taskId, req.body.tagId);
+    const taskTag = taskTagService.putTaskTag(
+      req.params.id,
+      req.body.taskId,
+      req.body.tagId,
+    );
     res.json(taskTag);
   } catch (error) {
     res.status(400).json({ message: error.message });

@@ -1,76 +1,53 @@
-const taskService = require("./taskService");
-const tagService = require("./tagService");
+const db = require("../db");
 
-const getAllTaskTags = () => {
-  return taskTags;
+const getAllTaskTags = async () => {
+  const [rows] = await db.query("SELECT * FROM task_tags");
+  return rows;
 };
 
-const postTaskTag = (taskId, tagId) => {
-  const task = taskService.getTaskById(taskId);
-  if (!task) {
-    throw new Error("Task not found");
-  }
-
-  const tag = tagService.getTagById(tagId);
-  if (!tag) {
-    throw new Error("Tag not found");
-  }
-
-  const duplicate = taskTags.find(
-    (tt) => tt.taskId === parseInt(taskId) && tt.tagId === parseInt(tagId),
+const postTaskTag = async (taskId, tagId) => {
+  const [duplicate] = await db.query(
+    "SELECT * FROM task_tags WHERE task_id = ? AND tag_id = ?",
+    [taskId, tagId],
   );
-  if (duplicate) {
+
+  if (duplicate.length > 0) {
     throw new Error("Tag already assigned to this task");
   }
 
-  const taskTag = {
-    id: id++,
-    taskId: parseInt(taskId),
-    tagId: parseInt(tagId),
-  };
+  const [result] = await db.query(
+    "INSERT INTO task_tags (task_id, tag_id) VALUES (?, ?)",
+    [taskId, tagId],
+  );
 
-  taskTags.push(taskTag);
-  return taskTag;
+  const [rows] = await db.query("SELECT * FROM task_tags WHERE id = ?", [
+    result.insertId,
+  ]);
+  return rows[0];
 };
 
-const deleteTaskTag = (id) => {
-  const index = taskTags.findIndex((tt) => tt.id === parseInt(id));
-  if (index === -1) {
-    throw new Error("TaskTag not found");
-  }
-  const deleted = taskTags.splice(index, 1)[0];
-  return deleted;
-};
+const putTaskTag = async (id, taskId, tagId) => {
+  const [result] = await db.query(
+    "UPDATE task_tags SET task_id = ?, tag_id = ? WHERE id = ?",
+    [taskId, tagId, id],
+  );
 
-const putTaskTag = (id, taskId, tagId) => {
-  const taskTag = taskTags.find((tt) => tt.id === parseInt(id));
-  if (!taskTag) {
+  if (result.affectedRows === 0) {
     throw new Error("TaskTag not found");
   }
 
-  const task = taskService.getTaskById(taskId);
-  if (!task) {
-    throw new Error("Task not found");
+  const [rows] = await db.query("SELECT * FROM task_tags WHERE id = ?", [id]);
+  return rows[0];
+};
+
+const deleteTaskTag = async (id) => {
+  const [result] = await db.query("DELETE FROM task_tags WHERE id = ?", [id]);
+
+  if (result.affectedRows === 0) {
+    throw new Error("TaskTag not found");
   }
 
-  const tag = tagService.getTagById(tagId);
-  if (!tag) {
-    throw new Error("Tag not found");
-  }
-
-  taskTag.taskId = parseInt(taskId);
-  taskTag.tagId = parseInt(tagId);
-  return taskTag;
+  return result;
 };
 
-const deleteByTagId = (tagId) => {
-  taskTags = taskTags.filter((tt) => tt.tagId !== parseInt(tagId));
-};
-
-const getTasksByTagId = (tagId) => {
-  const tagTaskIds = taskTags.filter((tt) => tt.tagId === parseInt(tagId)).map((tt) => tt.taskId);
-
-  return tagTaskIds.map((taskId) => taskService.getTaskById(taskId)).filter(Boolean);
-};
-
-module.exports = { getAllTaskTags, postTaskTag, deleteTaskTag, putTaskTag, deleteByTagId, getTasksByTagId };
+module.exports = { getAllTaskTags, postTaskTag, deleteTaskTag, putTaskTag };

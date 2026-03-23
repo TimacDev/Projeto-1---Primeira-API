@@ -6,7 +6,7 @@ const postTaskUser = (data) => {
   const taskUser = {
     id: id++,
     taskId: data.taskId,
-    userId: data.userId
+    userId: data.userId,
   };
 
   taskUsers.push(taskUser);
