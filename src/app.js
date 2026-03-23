@@ -24,7 +24,7 @@ const tagRoutes = require("./routes/tagRoutes");
 app.use("/tags", tagRoutes);
 
 // taskUsers
-const taskUsersRoutes = require("./routes/taskUsers");
+const taskUsersRoutes = require("./routes/taskUsersRoutes");
 app.use("/taskUsers", taskUsersRoutes);
 
 const PORT = process.env.PORT || 3000;
