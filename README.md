@@ -8,7 +8,7 @@
 1. Criar a base de dados MySQL `clickup` com as tabelas necessárias (users, tasks, tags, task_tags, comments, task_users)
 2. Configurar as variáveis de ambiente no ficheiro `.env` (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
 3. Instalar dependências: `npm install`
-4. Servidor: `npm run dev` → `http://localhost:3000`
+4. Servidor (com nodemon): `npm run dev` → `http://localhost:3000`
 5. Testar os endpoints usando um emulador de cliente (thunderclient, browser, etc.)
 
 
