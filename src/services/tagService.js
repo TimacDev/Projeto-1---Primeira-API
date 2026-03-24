@@ -21,6 +21,7 @@ const postTag = async (data) => {
 };
 
 const deleteTag = async (tagId) => {
+  await db.query("DELETE FROM task_tags WHERE tag_id = ?", [tagId]);
   const [result] = await db.query("DELETE FROM tags WHERE id = ?", [tagId]);
   return result;
 };
