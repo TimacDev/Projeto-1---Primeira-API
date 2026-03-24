@@ -31,13 +31,13 @@ const postTask = async (req, res) => {
 
 const putTask = async (req, res) => {
   try {
-    const task = await taskService.putTask(req.params.id, req.body);
+    const result = await taskService.putTask(req.params.id, req.body);
 
-    if (!task) {
+    if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    res.status(200).json(task);
+    res.status(200).json({ message: "Task updated" });
 
   } catch (error) {
     res.status(500).json({ message: error.message });

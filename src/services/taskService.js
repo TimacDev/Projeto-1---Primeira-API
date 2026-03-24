@@ -49,11 +49,7 @@ const postTask = async (data) => {
 
 const putTask = async (taskId, data) => {
   const [result] = await db.query("UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?", [data.title, data.description, data.status, taskId]);
-
-  if (result.affectedRows === 0) return null;
-
-  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
-  return rows[0];
+  return result;
 };
 
 const deleteTask = async (taskId) => {

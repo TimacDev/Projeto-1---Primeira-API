@@ -39,11 +39,7 @@ const postUser = async (data) => {
 
 const putUser = async (userId, data) => {
   const [result] = await db.query("UPDATE users SET name = ?, email = ? WHERE id = ?", [data.name, data.email, userId]);
-
-  if (result.affectedRows === 0) return null;
-
-  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
-  return rows[0];
+  return result;
 };
 
 const deleteUser = async (userId) => {
