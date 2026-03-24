@@ -50,7 +50,7 @@ const deleteUser = async (userId) => {
 const toggleUserActive = async (userId) => {
   const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
 
-  if (existing.length === 0) return null;
+  if (existing.length === 0) return null; 
 
   const newActive = existing[0].active ? 0 : 1;
   await db.query("UPDATE users SET active = ? WHERE id = ?", [newActive, userId]);

@@ -6,7 +6,7 @@ const getTags = async (req, res) => {
     res.json(tags);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching tags" });
   }
 };
 
@@ -20,7 +20,7 @@ const postTag = async (req, res) => {
     res.status(201).json(tag);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error creating tag" });
   }
 };
 
@@ -35,7 +35,7 @@ const deleteTag = async (req, res) => {
     res.status(200).json({ message: "Tag deleted" });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error deleting tag" });
   }
 };
 
@@ -45,7 +45,7 @@ const getTasksByTag = async (req, res) => {
     res.json(tasks);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching tasks for tag" });
   }
 };
 

@@ -57,7 +57,7 @@ const deleteTask = async (taskId) => {
 
   if (existing.length === 0) return null;
 
-  await db.query("DELETE FROM comments WHERE task_id = ?", [taskId]);
+  await db.query("DELETE FROM comments WHERE task_id = ?", [taskId]); //deletes comments associated with the corresponding task
   await db.query("DELETE FROM tasks WHERE id = ?", [taskId]);
 
   return existing[0];

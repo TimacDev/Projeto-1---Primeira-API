@@ -11,7 +11,7 @@ const getTasks = async (req, res) => {
     res.json(tasks);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching tasks" });
   }
 };
 
@@ -25,7 +25,7 @@ const postTask = async (req, res) => {
     res.status(201).json(task);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error creating task" });
   }
 };
 
@@ -40,7 +40,7 @@ const putTask = async (req, res) => {
     res.status(200).json({ message: "Task updated" });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error updating task" });
   }
 };
 
@@ -55,7 +55,7 @@ const deleteTask = async (req, res) => {
     res.status(200).json({ message: "Task deleted", task });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error deleting task" });
   }
 };
 
@@ -65,7 +65,7 @@ const getTaskStats = async (req, res) => {
     res.json(stats);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching task stats" });
   }
 };
 
@@ -77,7 +77,7 @@ const getComments = async (req, res) => {
     res.json(comments);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching comments" });
   }
 };
 
@@ -87,7 +87,7 @@ const postComment = async (req, res) => {
     res.status(201).json(comment);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error creating comment" });
   }
 };
 
@@ -102,7 +102,7 @@ const putComment = async (req, res) => {
     res.status(200).json(comment);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error updating comment" });
   }
 };
 
@@ -117,7 +117,7 @@ const deleteComment = async (req, res) => {
     res.status(200).json({ message: "Comment deleted" });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error deleting comment" });
   }
 };
 
@@ -129,7 +129,7 @@ const getTaskTags = async (req, res) => {
     res.json(taskTags);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching task tags" });
   }
 };
 
@@ -144,7 +144,7 @@ const postTaskTag = async (req, res) => {
     res.status(201).json(taskTag);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error assigning tag to task" });
   }
 };
 
@@ -159,7 +159,7 @@ const putTaskTag = async (req, res) => {
     res.json(taskTag);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error updating task tag" });
   }
 };
 
@@ -174,7 +174,7 @@ const deleteTaskTag = async (req, res) => {
     res.status(200).json({ message: "TaskTag deleted" });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error deleting task tag" });
   }
 };
 

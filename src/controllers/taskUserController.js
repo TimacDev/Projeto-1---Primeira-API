@@ -6,7 +6,7 @@ const getTaskUsers = async (req, res) => {
     res.json(taskUsers);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error fetching task users" });
   }
 };
 
@@ -16,7 +16,7 @@ const postTaskUser = async (req, res) => {
     res.status(201).json(taskUser);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error assigning user to task" });
   }
 };
 
@@ -31,7 +31,7 @@ const putTaskUser = async (req, res) => {
     res.status(200).json(taskUser);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error updating task user" });
   }
 };
 
@@ -46,7 +46,7 @@ const deleteTaskUser = async (req, res) => {
     res.status(200).json({ message: "TaskUser deleted" });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: "Error deleting task user" });
   }
 };
 
