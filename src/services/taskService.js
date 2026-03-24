@@ -43,24 +43,14 @@ const getTaskById = async (taskId) => {
 };
 
 const postTask = async (data) => {
-  if (!data.title || data.title.length <= 3) {
-    throw new Error("Title must have more than 3 characters");
-  }
-
   const [result] = await db.query("INSERT INTO tasks (title, description, status, user_id) VALUES (?, ?, ?, ?)", [data.title, data.description, data.status, data.userId]);
-
-  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [result.insertId]);
-  return rows[0];
+  return { id: result.insertId, title: data.title, description: data.description, status: data.status, userId: data.userId };
 };
 
 const putTask = async (taskId, data) => {
-  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
+  const [result] = await db.query("UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?", [data.title, data.description, data.status, taskId]);
 
-  if (existing.length === 0) {
-    throw new Error("Task not found");
-  }
-
-  await db.query("UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?", [data.title, data.description, data.status, taskId]);
+  if (result.affectedRows === 0) return null;
 
   const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
   return rows[0];
@@ -69,26 +59,12 @@ const putTask = async (taskId, data) => {
 const deleteTask = async (taskId) => {
   const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
 
-  if (existing.length === 0) {
-    throw new Error("Task not found");
-  }
+  if (existing.length === 0) return null;
 
   await db.query("DELETE FROM comments WHERE task_id = ?", [taskId]);
   await db.query("DELETE FROM tasks WHERE id = ?", [taskId]);
 
-  const [rows] = await db.query("SELECT status, COUNT(*) as count FROM tasks GROUP BY status");
-  let pending = 0;
-  let completed = 0;
-
-  for (const row of rows) {
-    if (row.status === "completed") {
-      completed = row.count;
-    } else {
-      pending += row.count;
-    }
-  }
-
-  return { task: existing[0], pending, completed };
+  return existing[0];
 };
 
 const getTasksByUserId = async (userId) => {

@@ -16,26 +16,13 @@ const getTasksByTagId = async (tagId) => {
 };
 
 const postTag = async (data) => {
-  if (!data.name) {
-    throw new Error("Tag must have a name");
-  }
-
   const [result] = await db.query("INSERT INTO tags (name) VALUES (?)", [data.name]);
-
-  const [rows] = await db.query("SELECT * FROM tags WHERE id = ?", [result.insertId]);
-  return rows[0];
+  return { id: result.insertId, name: data.name };
 };
 
 const deleteTag = async (tagId) => {
-  const [existing] = await db.query("SELECT * FROM tags WHERE id = ?", [tagId]);
-
-  if (existing.length === 0) {
-    throw new Error("Tag not found");
-  }
-
-  await db.query("DELETE FROM tags WHERE id = ?", [tagId]);
-
-  return existing[0];
+  const [result] = await db.query("DELETE FROM tags WHERE id = ?", [tagId]);
+  return result;
 };
 
 module.exports = {
