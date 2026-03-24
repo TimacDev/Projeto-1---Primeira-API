@@ -10,7 +10,10 @@ router.put("/:id", taskController.putTask);
 router.delete("/:id", taskController.deleteTask);
 
 // tags
+router.get("/tags", taskController.getTaskTags);
 router.post("/:id/tags", taskController.postTaskTag);
+router.put("/:id/tags/:tagId", taskController.putTaskTag);
+router.delete("/:id/tags/:tagId", taskController.deleteTaskTag);
 
 // comments
 router.get("/:id/comments", taskController.getComments);

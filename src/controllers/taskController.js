@@ -123,6 +123,16 @@ const deleteComment = async (req, res) => {
 
 // --- Task Tags ---
 
+const getTaskTags = async (req, res) => {
+  try {
+    const taskTags = await taskTagService.getAllTaskTags();
+    res.json(taskTags);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const postTaskTag = async (req, res) => {
   try {
     const taskTag = await taskTagService.postTaskTag(req.params.id, req.body.tagId);
@@ -132,6 +142,36 @@ const postTaskTag = async (req, res) => {
     }
 
     res.status(201).json(taskTag);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const putTaskTag = async (req, res) => {
+  try {
+    const taskTag = await taskTagService.putTaskTag(req.params.tagId, req.body.taskId, req.body.tagId);
+
+    if (!taskTag) {
+      return res.status(404).json({ message: "TaskTag not found" });
+    }
+
+    res.json(taskTag);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const deleteTaskTag = async (req, res) => {
+  try {
+    const result = await taskTagService.deleteTaskTag(req.params.tagId);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "TaskTag not found" });
+    }
+
+    res.status(200).json({ message: "TaskTag deleted" });
 
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -148,5 +188,8 @@ module.exports = {
   postComment,
   putComment,
   deleteComment,
+  getTaskTags,
   postTaskTag,
+  putTaskTag,
+  deleteTaskTag,
 };
