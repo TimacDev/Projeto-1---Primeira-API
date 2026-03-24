@@ -1,6 +1,6 @@
 # Nome: Tiago Machado
 
-# Link repo GitHub: https://github.com/TimacDev/guiados_express.git
+# Link repo GitHub: https://github.com/TimacDev/Projeto-1---Primeira-API.git
 
 
 ## Passos para executar o código
