@@ -1,52 +1,27 @@
-const taskService = require("./taskService");
-const userService = require("./userService");
+const db = require("../db");
 
-let comments = [
-  { id: 1, taskId: 1, userId: 1, content: "Nice progress!", createdAt: "2026-03-17T10:00:00.000Z" },
-  { id: 2, taskId: 1, userId: 2, content: "Needs some revision", createdAt: "2026-03-17T11:00:00.000Z" }
-];
-let id = 3;
-
-const getCommentsByTaskId = (taskId) => {
-  const task = taskService.getTaskById(taskId);
-  if (!task) {
-    throw new Error("Task not found");
-  }
-
-  return comments.filter((c) => c.taskId === parseInt(taskId));
+const getCommentsByTaskId = async (taskId) => {
+  const [rows] = await db.query("SELECT * FROM comments WHERE task_id = ? ORDER BY created_at ASC", [taskId]);
+  return rows;
 };
 
-const postComment = (taskId, data) => {
-  const task = taskService.getTaskById(taskId);
-  if (!task) {
-    throw new Error("Task not found");
-  }
-
-  const user = userService.getUserById(data.userId);
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  const comment = {
-    id: id++,
-    taskId: parseInt(taskId),
-    userId: data.userId,
-    content: data.content,
-    createdAt: new Date().toISOString(),
-  };
-
-  comments.push(comment);
-  return comment;
+const postComment = async (taskId, data) => {
+  const [result] = await db.query("INSERT INTO comments (task_id, user_id, content) VALUES (?, ?, ?)", [taskId, data.userId, data.content]);
+  return { id: result.insertId, taskId: parseInt(taskId), userId: data.userId, content: data.content };
 };
 
-const deleteComment = (commentId) => {
-  const comment = comments.find((c) => c.id === parseInt(commentId));
+const updateComment = async (commentId, data) => {
+  const [result] = await db.query("UPDATE comments SET content = ? WHERE id = ?", [data.content, commentId]);
 
-  if (!comment) throw new Error("Comment not found");
+  if (result.affectedRows === 0) return null;
 
-  comments = comments.filter((c) => c.id !== parseInt(commentId));
-
-  return comment;
+  const [rows] = await db.query("SELECT * FROM comments WHERE id = ?", [commentId]);
+  return rows[0];
 };
 
-module.exports = { getCommentsByTaskId, postComment, deleteComment };
+const deleteComment = async (commentId) => {
+  const [result] = await db.query("DELETE FROM comments WHERE id = ?", [commentId]);
+  return result;
+};
+
+module.exports = { getCommentsByTaskId, postComment, updateComment, deleteComment };

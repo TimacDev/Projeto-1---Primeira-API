@@ -1,94 +1,70 @@
-let users = [
-  { id: 1, name: "Tiago", email: "tiago@example.com", active: true },
-  { id: 2, name: "Rui", email: "rui@example.com", active: true }
-];
-let id = 3;
+const db = require("../db");
 
-const getAllUsers = (search, sort) => {
-  let result = [...users];
+const getAllUsers = async (search, sort) => {
+  let query = "SELECT * FROM users";
+  const params = [];
 
   if (search) {
-    result = result.filter((u) =>
-      u.name.toLowerCase().includes(search.toLowerCase())
-    );
+    query += " WHERE name LIKE ?";
+    params.push(`%${search}%`);
   }
 
   if (sort === "asc") {
-    result.sort((a, b) => a.name.localeCompare(b.name));
+    query += " ORDER BY name ASC";
   } else if (sort === "desc") {
-    result.sort((a, b) => b.name.localeCompare(a.name));
+    query += " ORDER BY name DESC";
   }
 
-  return result;
+  const [rows] = await db.query(query, params);
+  return rows;
 };
 
-const getUserStats = () => {
-  const total = users.length;
-  const active = users.filter((u) => u.active).length;
+const getUserStats = async () => {
+  const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM users");
+  const [[{ active }]] = await db.query("SELECT COUNT(*) as active FROM users WHERE active = 1");
   const activePercentage = total > 0 ? Math.round((active / total) * 100) : 0;
 
   return { total, active, activePercentage };
 };
 
-const postUser = (data) => {
-  if (!data.name) {
-    throw new Error("Name is required");
-  }
-
-  if (!data.email || !data.email.includes("@")) {
-    throw new Error("Invalid email");
-  }
-
-  const user = {
-    id: id++,
-    name: data.name,
-    email: data.email,
-    active: true
-  };
-
-  users.push(user);
-  return user;
+const getUserById = async (userId) => {
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+  return rows[0];
 };
 
-const putUser = (userId, data) => {
-  const user = users.find((u) => u.id === parseInt(userId));
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  if (data.email && !data.email.includes("@")) {
-    throw new Error("Invalid email");
-  }
-
-  user.name = data.name;
-  user.email = data.email;
-  return user;
+const postUser = async (data) => {
+  const [result] = await db.query("INSERT INTO users (name, email) VALUES (?, ?)", [data.name, data.email]);
+  return { id: result.insertId, name: data.name, email: data.email };
 };
 
-const deleteUser = (userId) => {
-  const user = users.find((u) => u.id === parseInt(userId));
-
-  if (!user) throw new Error("User not found");
-
-  users = users.filter((u) => u.id !== parseInt(userId));
-
-  return user;
+const putUser = async (userId, data) => {
+  const [result] = await db.query("UPDATE users SET name = ?, email = ? WHERE id = ?", [data.name, data.email, userId]);
+  return result;
 };
 
-const toggleUserActive = (userId) => {
-  const user = users.find((u) => u.id === parseInt(userId));
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  user.active = !user.active;
-  return user;
+const deleteUser = async (userId) => {
+  const [result] = await db.query("DELETE FROM users WHERE id = ?", [userId]);
+  return result;
 };
 
-const getUserById = (userId) => {
-  return users.find((u) => u.id === parseInt(userId));
+const toggleUserActive = async (userId) => {
+  const [existing] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+
+  if (existing.length === 0) return null; 
+
+  const toggle = existing[0].active ? 0 : 1;
+  await db.query("UPDATE users SET active = ? WHERE id = ?", [toggle, userId]);
+
+  const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+  return rows[0];
 };
 
-module.exports = { getAllUsers, postUser, putUser, deleteUser, toggleUserActive, getUserStats, getUserById };
+module.exports = {
+  getAllUsers,
+  postUser,
+  putUser,
+  deleteUser,
+  toggleUserActive,
+  getUserStats,
+  getUserById,
+};

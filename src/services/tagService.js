@@ -1,47 +1,34 @@
-let tags = [
-  { id: 1, name: "backend" }
-];
-let id = 2;
+const db = require("../db");
 
-const getAllTags = () => {
-  return tags;
+const getAllTags = async () => {
+  const [rows] = await db.query("SELECT * FROM tags");
+  return rows;
 };
 
-const getTagById = (tagId) => {
-  return tags.find((t) => t.id === parseInt(tagId));
+const getTagById = async (tagId) => {
+  const [rows] = await db.query("SELECT * FROM tags WHERE id = ?", [tagId]);
+  return rows[0];
 };
 
-const postTag = (data) => {
-  if (!data.name) {
-    throw new Error("Tag name is required");
-  }
-
-  const tag = {
-    id: id++,
-    name: data.name
-  };
-
-  tags.push(tag);
-  return tag;
+const getTasksByTagId = async (tagId) => {
+  const [rows] = await db.query("SELECT t.* FROM tasks t JOIN task_tags tt ON t.id = tt.task_id WHERE tt.tag_id = ?", [tagId]);
+  return rows;
 };
 
-const deleteTag = (tagId) => {
-  const tag = tags.find((t) => t.id === parseInt(tagId));
-
-  if (!tag) {
-    throw new Error("Tag not found");
-  }
-
-  tags = tags.filter((t) => t.id !== parseInt(tagId));
-  const taskTagService = require("./taskTagService");
-  taskTagService.deleteByTagId(tagId);
-
-  return tag;
+const postTag = async (data) => {
+  const [result] = await db.query("INSERT INTO tags (name) VALUES (?)", [data.name]);
+  return { id: result.insertId, name: data.name };
 };
 
-const getTasksByTagId = (tagId) => {
-  const taskTagService = require("./taskTagService");
-  return taskTagService.getTasksByTagId(tagId);
+const deleteTag = async (tagId) => {
+  const [result] = await db.query("DELETE FROM tags WHERE id = ?", [tagId]);
+  return result;
 };
 
-module.exports = { getAllTags, getTagById, postTag, deleteTag, getTasksByTagId };
+module.exports = {
+  getAllTags,
+  getTagById,
+  postTag,
+  deleteTag,
+  getTasksByTagId,
+};

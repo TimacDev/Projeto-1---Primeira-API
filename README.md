@@ -5,40 +5,47 @@
 
 ## Passos para executar o código
 
-
-1. Servidor: `http://localhost:3000`
-
-2. Testar os endpoints usando um emulador de cliente (thunderclient, browser, etc.)
+1. Criar a base de dados MySQL `clickup` com as tabelas necessárias (users, tasks, tags, task_tags, comments, task_users)
+2. Configurar as variáveis de ambiente no ficheiro `.env` (DB_HOST, DB_USER, DB_PASSWORD, DB_NAME)
+3. Instalar dependências: `npm install`
+4. Servidor: `npm run dev` → `http://localhost:3000`
+5. Testar os endpoints usando um emulador de cliente (thunderclient, browser, etc.)
 
 
 ## Principais decisões tomadas e justificação
 
+### Migração de arrays em memória para MySQL
+
+Todos os dados passaram a ser armazenados em MySQL usando `mysql2` com pool de conexões e `.promise()` para suportar `async/await`. Os arrays em memória foram completamente removidos.
+
 ### Arquitetura em 3 camadas (Routes, Controllers, Services)
 
-Cada camada tem uma responsabilidade única:
+- **Services** - Executam queries SQL e devolvem os dados em bruto (rows, result). Não fazem throw de erros nem decidem status HTTP.
+- **Controllers** - Recebem o request/response, fazem validações de input, verificam `affectedRows` ou valores `null` para decidir o status HTTP (400, 404, 500), e devolvem JSON.
+- **Routes** - Definem os endpoints (URL + método HTTP) e ligam-nos aos controllers.
 
-- **Routes** - Definem os endpoints (URL + metodo HTTP) e ligam-nos aos controllers
-- **Controllers** - Recebem o request/response, chamam o service e devolvem JSON
-- **Services** - Contem a logica de negócio, validações e manipulação de dados
+### Validação e erros nos Controllers (não nos Services)
 
+As validações de input (campos obrigatórios, formato de email, tamanho do título) são feitas nos controllers com status 400. Os services devolvem `null` quando um registo não existe ou o `result` do MySQL com `affectedRows`, e o controller decide o status HTTP. Isto evita acoplar os services a mensagens de erro específicas e permite reutilizá-los noutros contextos.
 
-### Validação nos Services com throw/catch
+### Uso de insertId e affectedRows
 
-As validações são feitas nos services usando `throw new Error`. Os controllers apanham estes erros com `try/catch` e devolvem o status adequado. Esta abordagem mantem os controllers simples e centraliza a lógica de negócio nos services.
+- **insertId** - Usado nos INSERT para devolver o ID gerado pela DB sem necessidade de um SELECT adicional.
+- **affectedRows** - Usado nos UPDATE e DELETE para verificar se o registo existia (0 = não encontrado → 404).
 
-### Ficheiro separado para TaskTags (relacao N:N)
+### Mensagens de erro genéricas no catch
 
-A associacao entre tasks e tags esta num ficheiro separado (`taskTagService.js`) em vez de estar dentro do `taskService.js`. Esta decisão melhora a organização do codigo, evitando que um unico ficheiro acumule demasiada responsabilidade. O `taskTagService` importa os outros services para validar a existencia de tasks e tags antes de criar associacoes.
+Os blocos `catch` devolvem mensagens descritivas fixas (ex: "Error creating user") em vez de `error.message`, para não expor mensagens internas da base de dados ao cliente.
 
-### Resolucção de dependências circulares com require local
+### Ficheiro separado para TaskTags (relação N:N)
 
-Quando dois services precisam um do outro (ex: `tagService` e `taskTagService`), o `require` e feito dentro das funções em vez de no topo do ficheiro. Isto evita dependências circulares que causariam erros, porque quando a função e chamada ambos os módulos ja estão completamente carregados.
+A associação entre tasks e tags está num `taskTagService.js` separado. O `taskController` importa este service para os endpoints `/tasks/:id/tags`, mantendo a lógica de associação isolada.
 
-### Middlewares 
+### Middlewares
 
-- **loggerMiddleware** - Regista o método HTTP e URL de cada pedido na consola
-- **checkUserExists** - Verifica se o utilizador existe antes de executar operações como PUT, PATCH e DELETE, evitando duplicacao desta validação em cada controller
+- **loggerMiddleware** - Regista o método HTTP e URL de cada pedido na consola.
+- **checkUserExists** - Verifica se o utilizador existe (via query à DB) antes de PUT, PATCH e DELETE, evitando duplicação desta validação.
 
-### Comentarios aninhados nas rotas de Tasks
+### Comentários e Tags aninhados nas rotas de Tasks
 
-Os endpoints de comentários (`/tasks/:id/comments`) estão registados no router de tasks em vez de terem um router separado. Isto reflete a relação 1:N entre tasks e comments, onde os comentários pertencem sempre a uma tarefa específica.
+Os endpoints de comentários (`/tasks/:id/comments`) e tags (`/tasks/:id/tags`) estão no router de tasks, refletindo as relações 1:N (comments) e N:N (tags) com as tarefas. O `taskController` trata todos estes sub-recursos.

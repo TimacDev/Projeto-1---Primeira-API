@@ -10,5 +10,6 @@ router.post("/", userController.postUser);
 router.put("/:id", checkUser, userController.putUser);
 router.patch("/:id", checkUser, userController.patchUser);
 router.delete("/:id", checkUser, userController.deleteUser);
+router.get("/:id/tasks", userController.getTasksByUser);
 
 module.exports = router;

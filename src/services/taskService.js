@@ -1,99 +1,79 @@
-let tasks = [
-  {
-    id: 1,
-    title: "Create layout",
-    category: "work",
-    done: false,
-    assignee: "Tiago",
-    completedAt: undefined,
-  },
-];
-let id = 2;
+const db = require("../db");
 
-const getAllTasks = (search, sort) => {
-  let result = [...tasks];
+const getAllTasks = async (search, sort) => {
+  let query = "SELECT * FROM tasks";
+  const params = [];
 
   if (search) {
-    result = result.filter((t) =>
-      t.title.toLowerCase().includes(search.toLowerCase()),
-    );
+    query += " WHERE title LIKE ?";
+    params.push(`%${search}%`);
   }
 
   if (sort === "asc") {
-    result.sort((a, b) => a.title.localeCompare(b.title));
+    query += " ORDER BY title ASC";
   } else if (sort === "desc") {
-    result.sort((a, b) => b.title.localeCompare(a.title));
+    query += " ORDER BY title DESC";
   }
 
-  return result;
+  const [rows] = await db.query(query, params);
+  return rows;
 };
 
-const getTaskStats = () => {
-  const total = tasks.length;
-  const pending = tasks.filter((t) => !t.done).length;
-  const completed = tasks.filter((t) => t.done).length;
+const getTaskStats = async () => {
+  const [rows] = await db.query("SELECT status, COUNT(*) as count FROM tasks GROUP BY status");
+  let pending = 0;
+  let completed = 0;
+  let total = 0;
+
+  for (const row of rows) {
+    total += row.count;
+    if (row.status === "completed") {
+      completed = row.count;
+    } else {
+      pending += row.count;
+    }
+  }
 
   return { total, pending, completed };
 };
 
-const getTaskById = (taskId) => {
-  return tasks.find((t) => t.id === parseInt(taskId));
+const getTaskById = async (taskId) => {
+  const [rows] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
+  return rows[0];
 };
 
-const postTask = (data) => {
-  if (!data.title || data.title.length <= 3) {
-    throw new Error("Title must have more than 3 characters");
-  }
-
-  if (!data.assignee) {
-    throw new Error("Assignee cannot be empty");
-  }
-
-  const task = {
-    id: id++,
-    title: data.title,
-    category: data.category,
-    done: false,
-    assignee: data.assignee,
-    completedAt: undefined,
-  };
-
-  tasks.push(task);
-  return task;
+const postTask = async (data) => {
+  const [result] = await db.query("INSERT INTO tasks (title, description, status, user_id) VALUES (?, ?, ?, ?)", [data.title, data.description, data.status, data.userId]);
+  return { id: result.insertId, title: data.title, description: data.description, status: data.status, userId: data.userId };
 };
 
-const putTask = (taskId, data) => {
-  const task = tasks.find((t) => t.id === parseInt(taskId));
-
-  if (!task) {
-    throw new Error("Task not found");
-  }
-
-  task.title = data.title;
-  task.category = data.category;
-  task.assignee = data.assignee;
-  task.done = data.done;
-
-  if (data.done === true) {
-    task.completedAt = new Date().toISOString();
-  } else {
-    task.completedAt = undefined;
-  }
-
-  return task;
+const putTask = async (taskId, data) => {
+  const [result] = await db.query("UPDATE tasks SET title = ?, description = ?, status = ? WHERE id = ?", [data.title, data.description, data.status, taskId]);
+  return result;
 };
 
-const deleteTask = (taskId) => {
-  const task = tasks.find((t) => t.id === parseInt(taskId));
+const deleteTask = async (taskId) => {
+  const [existing] = await db.query("SELECT * FROM tasks WHERE id = ?", [taskId]);
 
-  if (!task) throw new Error("Task not found");
+  if (existing.length === 0) return null;
 
-  tasks = tasks.filter((t) => t.id !== parseInt(taskId));
+  await db.query("DELETE FROM comments WHERE task_id = ?", [taskId]); //deletes comments associated with the corresponding task
+  await db.query("DELETE FROM tasks WHERE id = ?", [taskId]);
 
-  const pending = tasks.filter((t) => !t.done).length;
-  const completed = tasks.filter((t) => t.done).length;
-
-  return { task, pending, completed };
+  return existing[0];
 };
 
-module.exports = { getAllTasks, postTask, putTask, deleteTask, getTaskStats, getTaskById };
+const getTasksByUserId = async (userId) => {
+  const [rows] = await db.query("SELECT * FROM tasks WHERE user_id = ?", [userId]);
+  return rows;
+};
+
+module.exports = {
+  getAllTasks,
+  postTask,
+  putTask,
+  deleteTask,
+  getTaskStats,
+  getTaskById,
+  getTasksByUserId,
+};

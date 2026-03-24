@@ -1,40 +1,33 @@
-const express = require("express")
-const dotenv = require("dotenv")
+const express = require("express");
+const dotenv = require("dotenv");
 
-dotenv.config()
+dotenv.config();
 
-const app = express()
+const app = express();
 
-app.use(express.json())
+app.use(express.json());
 
 // middleware
-const logger = require("./middlewares/loggerMiddleware")
-app.use(logger)
+const logger = require("./middlewares/loggerMiddleware");
+app.use(logger);
 
 // tasks
-const taskRoutes = require("./routes/tasks")
-app.use("/tasks", taskRoutes)
+const taskRoutes = require("./routes/taskRoutes");
+app.use("/tasks", taskRoutes);
 
 // users
-const userRoutes = require("./routes/users")
-app.use("/users", userRoutes)
+const userRoutes = require("./routes/userRoutes");
+app.use("/users", userRoutes);
 
 // tags
-const tagsRoutes = require("./routes/tags")
-app.use("/tags", tagsRoutes)
-
-// taskTags
-const taskTagsRoutes = require("./routes/taskTags")
-app.use("/taskTags", taskTagsRoutes)
-
-// notifications
-const notificationsRoutes = require("./routes/notifications")
-app.use("/notifications", notificationsRoutes)
+const tagRoutes = require("./routes/tagRoutes");
+app.use("/tags", tagRoutes);
 
 // taskUsers
-const taskUsersRoutes = require("./routes/taskUsers")
-app.use("/taskUsers", taskUsersRoutes)
+const taskUsersRoutes = require("./routes/taskUsersRoutes");
+app.use("/taskUsers", taskUsersRoutes);
 
-
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => console.log(`Servidor rodando em http://localhost:${PORT}`))
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () =>
+  console.log(`Servidor rodando em http://localhost:${PORT}`),
+);
