@@ -6,6 +6,7 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
+app.use(cors());
 
 // middleware
 const logger = require("./middlewares/loggerMiddleware");
