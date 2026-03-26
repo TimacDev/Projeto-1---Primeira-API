@@ -59,10 +59,12 @@ const deleteTask = async (taskId) => {
 
   await db.query("DELETE FROM comments WHERE task_id = ?", [taskId]);
   await db.query("DELETE FROM task_tags WHERE task_id = ?", [taskId]);
+  await db.query("DELETE FROM user_task WHERE task_id = ?", [taskId]);
   await db.query("DELETE FROM tasks WHERE id = ?", [taskId]);
 
   return existing[0];
 };
+
 
 const getTasksByUserId = async (userId) => {
   const [rows] = await db.query("SELECT * FROM tasks WHERE user_id = ?", [userId]);
